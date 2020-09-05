@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Garden</title>
+
+  <link rel="stylesheet" href="./style.css">
+  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.css" />
+
+  <!-- update the version number as needed -->
+  <script defer src="/__/firebase/7.17.1/firebase-app.js"></script>
+  <!-- include only the Firebase features as you need -->
+  <script defer src="/__/firebase/7.17.1/firebase-auth.js"></script>
+  <script defer src="/__/firebase/7.17.1/firebase-firestore.js"></script>
+  <!-- initialize the SDK after all desired features are loaded -->
+  <script defer src="/__/firebase/init.js"></script>
+  <script src="https://cdn.firebase.com/libs/firebaseui/3.5.2/firebaseui.js"></script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+</head>
+
+<body>
+
+  <section class="main">
+    <div id="cards-container" class="cards-container">
+      <div class="card">
+        <div class="telemetry-row">
+          <h2>Temperature</h2>
+          <div id="temperature" class="telemetry-data"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="telemetry-row">
+          <h2>Humidity</h2>
+          <div id="humidity" class="telemetry-data"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="telemetry-row">
+          <h2>CO2</h2>
+          <div id="co2" class="telemetry-data"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="telemetry-row">
+          <h2>TVOC</h2>
+          <div id="tvoc" class="telemetry-data"></div>
+        </div>
+      </div>
+      <div id="last-update-date" class="last-update-date"></div>
+    </div>
+  </section>
+
+  <section>
+    <div id="firebaseui-auth-container"></div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const app = firebase.app();
+        const ui = new firebaseui.auth.AuthUI(firebase.auth());
+        const db = firebase.firestore();
+
+        // Auth
+        ui.start('#firebaseui-auth-container', {
+          signInOptions: [
+            firebase.auth.GoogleAuthProvider.PROVIDER_ID
+          ]
+        });
+        firebase.auth().onAuthStateChanged((user) => {
+          if (user) {
+            document.getElementById('firebaseui-auth-container').style.display = 'none';
+            document.getElementById('cards-container').style.display = 'flex';
+            getData(db);
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    function getData(db) {
+      // Firestore
+      db.collection("latest").doc("garden1")
+        .onSnapshot(function (doc) {
+          const data = doc.data().latest;
+          renderData(data);
+        });
+    }
+
+    function renderData(data) {
+      const date = new Date(data.date);
+      const dateElem = document.getElementById('last-update-date');
+      const temperatureDataElem = document.getElementById('temperature');
+      const humidityDataElem = document.getElementById('humidity');
+      const co2DataElem = document.getElementById('co2');
+      const tvocDataElem = document.getElementById('tvoc');
+
+      temperatureDataElem.innerHTML = `${data.temperature.toFixed(2)}°C`;
+      humidityDataElem.innerHTML = `${data.humidity.toFixed(2)}%`;
+      co2DataElem.innerHTML = `${data.co2}%`;
+      tvocDataElem.innerHTML = `${data.tvoc} PPM`;
+
+      dateElem.innerHTML = `Last update: ${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": {
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run lint"
+    ],
+    "source": "functions"
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {"source": "/status", "function": "status"},
+      {"source": "/assistant", "function": "assistant"}
+    ]
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 9099
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "ui": {
+      "enabled": true
+    }
+  }
+}
